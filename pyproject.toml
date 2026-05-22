@@ -1,0 +1,35 @@
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+
+# ── Our code intentionally uses `Any` for generic dict processing ──
+reportExplicitAny = false
+reportMissingTypeArgument = false
+
+# ── Third-party stubs (langgraph, fastmcp, opencv) are incomplete ──
+reportUnknownMemberType = false
+reportUnknownParameterType = false
+reportUnknownVariableType = false
+
+# ── Framework patterns that look unused to static analysis ──
+reportUnusedCallResult = false
+reportUnusedFunction = false
+reportPrivateUsage = false
+
+# ── OpenCV stubs are incomplete (VideoWriter_fourcc, etc.) ──
+reportAttributeAccessIssue = false
+
+# ── We target Python 3.14; the old `List` naming is cosmetic ──
+reportDeprecated = false
+
+# ── Dynamic dict.get() patterns intentionally return Any ──
+reportAny = false
+
+# ── langgraph ships without type stubs ──
+reportMissingTypeStubs = false
+
+# ── Occasional unknown args from third-party overloads ──
+reportUnknownArgumentType = false
+
+# ── Single occurrence, not worth a config override ──
+reportUnusedParameter = false

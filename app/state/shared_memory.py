@@ -6,9 +6,9 @@ from typing import Any
 class SharedMemory:
     """Shared memory/context for agent coordination."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._memory: dict[str, Any] = {}
-        self._lock = None  # Can be used with asyncio.Lock
+        self._lock: Any = None  # Can be used with asyncio.Lock
 
     async def get(self, key: str) -> Any | None:
         """Get value from shared memory."""

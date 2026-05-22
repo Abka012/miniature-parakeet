@@ -1,13 +1,10 @@
 # miniature-parakeet
 
-Async Multi-Agent POC using LangGraph + FastMCP
+Async Multi-Agent POC using LangGraph + FastMCP + real media processing.
 
 ## Overview
 
-This project demonstrates a lightweight async multi-agent system in Python using:
-- **LangGraph** - For building agent workflows
-- **FastMCP** - For Model Context Protocol integration
-- **asyncio** - For asynchronous orchestration
+A lightweight async multi-agent system that processes images, audio, and video via base64-encoded payloads. Uses LangGraph for workflow orchestration, FastMCP for tool registration, and real processing libraries (Pillow, OpenCV, stdlib `wave`).
 
 ## Architecture
 
@@ -16,40 +13,59 @@ This project demonstrates a lightweight async multi-agent system in Python using
                       |
               SupervisorAgent
                       |
-      --------------------------------
-      |              |              |
-  ImageAgent     AudioAgent     VideoAgent
-      |              |              |
-  MCP Tool      MCP Tool       MCP Tool 
-      \              |             /
-       -------------Shared State----
-                      |
-               Final Aggregator
+       Fan-out (parallel conditional edge)
+      ┌──────────┼──────────┐
+      |          |          |
+  ImageAgent  AudioAgent VideoAgent
+      |          |          |
+  Pillow     stdlib wave  OpenCV
+  processor   processor   processor
+      |          |          |
+      └──────────┼──────────┘
+           Fan-in to Aggregator
 ```
 
 ## Features
 
-- ✅ MCP (Model Context Protocol) integration
-- ✅ FastMCP tools
-- ✅ Async orchestration with asyncio
-- ✅ Deep Agents with specialized capabilities
-- ✅ Sub-agents under supervisor
-- ✅ Shared memory/context for coordination
-- ✅ Agent coordination and routing
-- ✅ Parallel execution of agents
+- ✅ Real media processing (Pillow, OpenCV, stdlib wave)
+- ✅ Parallel agent execution via LangGraph fan-out
+- ✅ MCP (Model Context Protocol) integration via FastMCP
+- ✅ Robust error handling (corrupt base64, invalid formats)
+- ✅ Shared state with `Annotated` reducers for concurrent writes
+- ✅ Minimal base64 payload generators for testing (stdlib-only)
 
-## Installation
-
-```bash
-pip install -r requirements.txt
-```
-
-### Requirements
+## Requirements
 
 ```
 langgraph
 langchain
 fastmcp
+Pillow
+opencv-python-headless
+numpy
+```
+
+## Setup
+
+### 1. Create and activate a virtual environment
+
+```bash
+# Create the virtual environment
+python -m venv .venv
+
+# Activate it
+source .venv/bin/activate        # Linux / macOS
+.venv\Scripts\activate           # Windows (cmd)
+.venv\Scripts\Activate.ps1       # Windows (PowerShell)
+
+# Deactivate when done
+deactivate
+```
+
+### 2. Install dependencies
+
+```bash
+pip install -r requirements.txt
 ```
 
 ## Project Structure
@@ -64,10 +80,15 @@ project/
 │   │   └── supervisor.py
 │   │
 │   ├── tools/
-│   │   ├── mcp_server.py
+│   │   ├── mcp_server.py          # FastMCP server + real processor wiring
+│   │   ├── mcp_client.py          # Async client wrapper
 │   │   ├── image_tool.py
 │   │   ├── audio_tool.py
-│   │   └── video_tool.py
+│   │   ├── video_tool.py
+│   │   └── processors/            # Decoupled processing logic
+│   │       ├── image_processor.py  # Pillow-based
+│   │       ├── audio_processor.py  # stdlib wave
+│   │       └── video_processor.py  # OpenCV-based
 │   │
 │   ├── graph/
 │   │   └── workflow.py
@@ -81,89 +102,80 @@ project/
 │   │
 │   └── __init__.py
 │
-├── main.py
+├── scripts/
+│   └── test_workflow.py           # Payload verification & integration tests
+│
+├── main.py                         # Demo entry point
 ├── requirements.txt
+├── pyproject.toml                  # Python + basedpyright config
 └── README.md
 ```
 
 ## Usage
 
-### Run the Multi-Agent System
+### Run the demo
 
 ```bash
 python main.py
 ```
 
-### Example Outputs
+Output shows three examples:
+1. **Text-based routing** — auto-detects task type from user input
+2. **Parallel processing** — fans out to all 3 agents with real base64 payloads
+3. **Supervisor workflow** — routes to a single agent
 
-1. **Text-based task routing** - Automatically routes image/audio/video tasks based on user input analysis
-2. **Parallel media processing** - Processes multiple media types simultaneously
-3. **Supervisor agent workflow** - Orchestrates sub-agents for complex tasks
+### Run tests
 
-### Using the Workflow
+```bash
+python scripts/test_workflow.py
+```
+
+8 tests covering payload integrity, metadata extraction, parallel transport, partial payloads, and error handling.
+
+### Programmatic use
 
 ```python
 from app.graph.workflow import Workflow
 
-workflow = Workflow()
+wf = Workflow()
 
-# Run with text input (auto-detects task type)
-result = await workflow.run("Analyze this image")
+# Text-based — auto-routes to image/audio/video agent
+result = await wf.run("Analyze this image")
 
-# Run with specific media data (parallel processing)
-result = await workflow.run_parallel(
-    image_data="base64_data",
-    audio_data="base64_data", 
-    video_data="base64_data"
+# Parallel — feeds base64 to all three agents
+result = await wf.run_parallel(
+    image_data="base64_encoded_png",
+    audio_data="base64_encoded_wav",
+    video_data="base64_encoded_mp4",
 )
 ```
 
-### Using the Supervisor
+## Processing Pipeline
 
-```python
-from app.agents.supervisor import SupervisorAgent
+| Media   | Library               | Extracted Metadata                                    |
+|---------|-----------------------|-------------------------------------------------------|
+| Image   | Pillow                | width, height, format, mode, thumbnail                |
+| Audio   | stdlib `wave`         | duration, sample rate, channels, sample width, frames |
+| Video   | opencv-python-headless | duration, fps, resolution, frame count, dimensions    |
 
-supervisor = SupervisorAgent()
-result = await supervisor.run("Process an audio file")
+All processors return structured dicts: `{"status": "success", "metadata": {...}}` or `{"status": "error", "error": "..."}`.
+
+## Static Analysis
+
+The project uses `basedpyright` for type checking:
+
+```bash
+pip install basedpyright
+basedpyright .
 ```
 
-## Agents
-
-### SupervisorAgent
-- Orchestrates all sub-agents
-- Routes tasks based on content analysis
-- Coordinates parallel execution
-- Aggregates results
-
-### ImageAgent
-- Processes images (base64 encoded)
-- Extracts metadata (dimensions, format)
-- Identifies objects, scenes, or people
-
-### AudioAgent
-- Processes audio files (base64 encoded)
-- Extracts metadata (duration, sample rate)
-- Detects audio content characteristics
-
-### VideoAgent
-- Processes video files (base64 encoded)
-- Extracts metadata (duration, resolution, FPS)
-- Analyzes video content
-
-## Tools (MCP)
-
-All agents use MCP (Model Context Protocol) tools for processing:
-- `process_image` - Image processing
-- `process_audio` - Audio processing
-- `process_video` - Video processing
+Configuration lives in `pyproject.toml` under `[tool.pyright]`.
 
 ## State Management
 
-The system uses a shared `AgentState` that is passed between agents:
-- `messages` - Conversation history
-- `task_type` - Current task type (image/audio/video)
-- `task_data` - Input data for processing
-- `results` - Aggregated results from all agents
-- `metadata` - Additional context information
-- `current_agent` - Track which agent is running
-- `error` - Error tracking
+`AgentState` extends `MessagesState` with custom fields. Fields written concurrently during parallel fan-out use `Annotated` reducers for safe merging:
+
+- `results` — `_merge_results` dict merge
+- `metadata` — `_merge_results` dict merge
+- `current_agent` — `_last_wins`
+- `error` — `_last_wins`
