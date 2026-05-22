@@ -17,85 +17,80 @@ from app.state.state import AgentState
 class Workflow:
     """Multi-agent workflow with parallel execution support."""
 
-    def __init__(self):
-        self.image_agent = ImageAgent()
-        self.audio_agent = AudioAgent()
-        self.video_agent = VideoAgent()
-        self.supervisor = SupervisorAgent()
-        self.checkpointer = MemorySaver()
+    def __init__(self) -> None:
+        self.image_agent: ImageAgent = ImageAgent()
+        self.audio_agent: AudioAgent = AudioAgent()
+        self.video_agent: VideoAgent = VideoAgent()
+        self.supervisor: SupervisorAgent = SupervisorAgent()
+        self.checkpointer: MemorySaver = MemorySaver()
+        self.graph: Any = None
         self._build_workflow()
 
     def _build_workflow(self):
         """Build the parallel workflow graph."""
         workflow = StateGraph(AgentState)
 
-        # Add all agent nodes
         workflow.add_node("supervisor", self.supervisor._supervisor_node)
         workflow.add_node("image_agent", self.image_agent.run)
         workflow.add_node("audio_agent", self.audio_agent.run)
         workflow.add_node("video_agent", self.video_agent.run)
         workflow.add_node("aggregator", self._aggregator)
 
-        # Supervisor routes to appropriate agents based on task type
         workflow.add_conditional_edges(
             "supervisor",
             self._determine_task_type,
-            {
-                "image": "image_agent",
-                "audio": "audio_agent",
-                "video": "video_agent",
-                "all": "start_parallel",
-            },
         )
 
-        # Start parallel execution node
-        workflow.add_node("start_parallel", self._start_parallel)
-
-        # Each agent routes to aggregator
         workflow.add_edge("image_agent", "aggregator")
         workflow.add_edge("audio_agent", "aggregator")
         workflow.add_edge("video_agent", "aggregator")
 
-        # Aggregator produces final output and ends
         workflow.add_edge("aggregator", END)
 
         workflow.set_entry_point("supervisor")
 
         self.graph = workflow.compile(checkpointer=self.checkpointer)
 
-    def _determine_task_type(self, state: AgentState) -> str:
-        """Determine which agents to invoke based on task type."""
+    def _determine_task_type(
+        self, state: AgentState
+    ) -> str | list[str]:
+        """Return node name(s) to invoke next.
+
+        Returns a single node name for image / audio / video or a list of
+        all three node names when the request is for parallel processing.
+        """
         task_type = state.get("task_type", "")
         messages = state.get("messages", [])
 
-        # If task type not set, infer from messages
         if not task_type and messages:
             content = str(messages[-1].content).lower()
             if "image" in content or "photo" in content:
-                return "image"
+                return "image_agent"
             elif "audio" in content or "sound" in content:
-                return "audio"
+                return "audio_agent"
             elif "video" in content or "movie" in content:
-                return "video"
+                return "video_agent"
             else:
-                return "all"  # Process all if not specified
+                return ["image_agent", "audio_agent", "video_agent"]
 
-        return task_type
-
-    def _start_parallel(self, state: AgentState) -> dict[str, Any]:
-        """Trigger parallel execution of all agents."""
-        return {
-            "current_agent": "parallel_executor",
-            "metadata": {"execution_mode": "parallel"},
+        mapping: dict[str, str | list[str]] = {
+            "image": "image_agent",
+            "audio": "audio_agent",
+            "video": "video_agent",
+            "all": ["image_agent", "audio_agent", "video_agent"],
         }
+        return mapping.get(task_type, task_type)
 
     def _aggregator(self, state: AgentState) -> dict[str, Any]:
         """Aggregate results from all agents."""
+        existing = state.get("results", {})
+        executed = [k for k in ("image_agent", "audio_agent", "video_agent") if k in existing]
         return {
             "current_agent": "aggregator",
             "results": {
+                **existing,
                 "status": "all_completed",
-                "agents_executed": ["image", "audio", "video"],
+                "agents_executed": executed,
                 "message": "Multi-agent workflow completed successfully",
             },
         }

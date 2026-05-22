@@ -25,11 +25,12 @@ class SupervisorAgent:
     - Routes to final aggregator
     """
 
-    def __init__(self):
-        self.image_agent = ImageAgent()
-        self.audio_agent = AudioAgent()
-        self.video_agent = VideoAgent()
-        self.checkpointer = MemorySaver()
+    def __init__(self) -> None:
+        self.image_agent: ImageAgent = ImageAgent()
+        self.audio_agent: AudioAgent = AudioAgent()
+        self.video_agent: VideoAgent = VideoAgent()
+        self.checkpointer: MemorySaver = MemorySaver()
+        self.graph: Any = None
         self._build_graph()
 
     def _build_graph(self):

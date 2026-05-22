@@ -3,14 +3,14 @@
 import asyncio
 from typing import Any
 
-from .mcp_server import mcp_server
+from .mcp_server import MCPServer, mcp_server
 
 
 class MCPClient:
     """Client for interacting with MCP tools."""
 
-    def __init__(self):
-        self.server = mcp_server
+    def __init__(self) -> None:
+        self.server: MCPServer = mcp_server
 
     async def process_image(
         self, image_data: str, format: str = "png"

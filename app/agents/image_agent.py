@@ -10,16 +10,7 @@ from app.state.state import AgentState
 class ImageAgent:
     """Agent specialized in image processing."""
 
-    def __init__(self):
-        self.name = "image_agent"
-        self.prompt = ChatPromptTemplate.from_messages(
-            [
-                ("system", self.system_prompt),
-                ("user", "{input}"),
-            ]
-        )
-
-    system_prompt = """You are an image processing agent.
+    system_prompt: str = """You are an image processing agent.
 
     Your role is to analyze and process images based on user requests.
     You can:
@@ -31,12 +22,23 @@ class ImageAgent:
     Always use the available tools for processing images.
     """
 
+    def __init__(self) -> None:
+        self.name: str = "image_agent"
+        self.prompt: ChatPromptTemplate = ChatPromptTemplate.from_messages(
+            [
+                ("system", self.system_prompt),
+                ("user", "{input}"),
+            ]
+        )
+
     async def process_image(self, image_data: str, format: str = "png") -> str:
         """Process image data and return results."""
         from app.tools.mcp_client import mcp_client
 
         result = await mcp_client.process_image(image_data, format)
-        return result["result"]
+        if result.get("status") == "error":
+            return f"Error: {result.get('error', 'unknown error')}"
+        return result.get("result", "No result returned")
 
     async def extract_info(self, image_data: str) -> dict:
         """Extract metadata from image."""
@@ -51,7 +53,7 @@ class ImageAgent:
         # Get image data from task
         image_data = task_data.get("image_data", "")
 
-        result = {
+        result: dict[str, Any] = {
             "current_agent": self.name,
             "results": {
                 "image_agent": {
@@ -62,7 +64,6 @@ class ImageAgent:
         }
 
         if image_data:
-            # Process the image
             processed = await self.process_image(image_data, "png")
             result["results"]["image_agent"]["processing_result"] = processed
 
@@ -72,7 +73,7 @@ class ImageAgent:
         """Process image directly."""
         result = await self.process_image(image_data, "png")
         return {
-            "status": "success",
+            "status": "success" if not result.startswith("Error") else "error",
             "agent": self.name,
             "result": result,
         }

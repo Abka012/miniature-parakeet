@@ -10,16 +10,7 @@ from app.state.state import AgentState
 class AudioAgent:
     """Agent specialized in audio processing."""
 
-    def __init__(self):
-        self.name = "audio_agent"
-        self.prompt = ChatPromptTemplate.from_messages(
-            [
-                ("system", self.system_prompt),
-                ("user", "{input}"),
-            ]
-        )
-
-    system_prompt = """You are an audio processing agent.
+    system_prompt: str = """You are an audio processing agent.
 
     Your role is to analyze and process audio based on user requests.
     You can:
@@ -31,27 +22,37 @@ class AudioAgent:
     Always use the available tools for processing audio.
     """
 
-    async def process_audio(self, audio_data: str, format: str = "mp3") -> str:
+    def __init__(self) -> None:
+        self.name: str = "audio_agent"
+        self.prompt: ChatPromptTemplate = ChatPromptTemplate.from_messages(
+            [
+                ("system", self.system_prompt),
+                ("user", "{input}"),
+            ]
+        )
+
+    async def process_audio(self, audio_data: str, format: str = "wav") -> str:
         """Process audio data and return results."""
         from app.tools.mcp_client import mcp_client
 
         result = await mcp_client.process_audio(audio_data, format)
-        return result["result"]
+        if result.get("status") == "error":
+            return f"Error: {result.get('error', 'unknown error')}"
+        return result.get("result", "No result returned")
 
     async def extract_info(self, audio_data: str) -> dict:
         """Extract metadata from audio."""
         from app.tools.mcp_client import mcp_client
 
-        return await mcp_client.process_audio(audio_data, "mp3")
+        return await mcp_client.process_audio(audio_data, "wav")
 
     async def run(self, state: AgentState) -> dict[str, Any]:
         """Run the audio agent."""
         task_data = state.get("task_data", {})
 
-        # Get audio data from task
         audio_data = task_data.get("audio_data", "")
 
-        result = {
+        result: dict[str, Any] = {
             "current_agent": self.name,
             "results": {
                 "audio_agent": {
@@ -62,17 +63,16 @@ class AudioAgent:
         }
 
         if audio_data:
-            # Process the audio
-            processed = await self.process_audio(audio_data, "mp3")
+            processed = await self.process_audio(audio_data, "wav")
             result["results"]["audio_agent"]["processing_result"] = processed
 
         return result
 
     async def process(self, audio_data: str) -> dict[str, Any]:
         """Process audio directly."""
-        result = await self.process_audio(audio_data, "mp3")
+        result = await self.process_audio(audio_data, "wav")
         return {
-            "status": "success",
+            "status": "success" if not result.startswith("Error") else "error",
             "agent": self.name,
             "result": result,
         }
