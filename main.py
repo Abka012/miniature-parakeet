@@ -10,8 +10,8 @@ import tempfile
 import wave
 import zlib
 
-from app.agents.supervisor import SupervisorAgent
-from app.graph.workflow import Workflow
+from miniature_parakeet.agents.supervisor import SupervisorAgent
+from miniature_parakeet.graph.workflow import Workflow
 
 
 def _tiny_png() -> str:

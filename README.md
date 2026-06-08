@@ -72,7 +72,7 @@ pip install -r requirements.txt
 
 ```
 project/
-├── app/
+├── miniature_parakeet/
 │   ├── agents/
 │   │   ├── image_agent.py
 │   │   ├── audio_agent.py
@@ -135,7 +135,7 @@ python scripts/test_workflow.py
 ### Programmatic use
 
 ```python
-from app.graph.workflow import Workflow
+from miniature_parakeet.graph.workflow import Workflow
 
 wf = Workflow()
 

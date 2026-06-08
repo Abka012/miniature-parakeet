@@ -7,10 +7,10 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, StateGraph
 
-from app.agents.audio_agent import AudioAgent
-from app.agents.image_agent import ImageAgent
-from app.agents.video_agent import VideoAgent
-from app.state.state import AgentState
+from miniature_parakeet.agents.audio_agent import AudioAgent
+from miniature_parakeet.agents.image_agent import ImageAgent
+from miniature_parakeet.agents.video_agent import VideoAgent
+from miniature_parakeet.state.state import AgentState
 
 
 class SupervisorAgent:

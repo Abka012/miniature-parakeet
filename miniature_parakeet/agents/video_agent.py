@@ -4,7 +4,7 @@ from typing import Any
 
 from langchain_core.prompts import ChatPromptTemplate
 
-from app.state.state import AgentState
+from miniature_parakeet.state.state import AgentState
 
 
 class VideoAgent:
@@ -33,7 +33,7 @@ class VideoAgent:
 
     async def process_video(self, video_data: str, format: str = "mp4") -> str:
         """Process video data and return results."""
-        from app.tools.mcp_client import mcp_client
+        from miniature_parakeet.tools.mcp_client import mcp_client
 
         result = await mcp_client.process_video(video_data, format)
         if result.get("status") == "error":
@@ -42,7 +42,7 @@ class VideoAgent:
 
     async def extract_info(self, video_data: str) -> dict:
         """Extract metadata from video."""
-        from app.tools.mcp_client import mcp_client
+        from miniature_parakeet.tools.mcp_client import mcp_client
 
         return await mcp_client.process_video(video_data, "mp4")
 

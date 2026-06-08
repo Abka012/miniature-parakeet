@@ -1,14 +1,14 @@
 """MCP (Model Context Protocol) server for multi-agent system.
 
-Processing logic lives in ``app.tools.processors`` and is kept fully
+Processing logic lives in ``miniature_parakeet.tools.processors`` and is kept fully
 decoupled from the MCP tool registration layer.
 """
 
 from mcp.server import FastMCP
 
-from app.tools.processors import process_audio as _process_audio
-from app.tools.processors import process_image as _process_image
-from app.tools.processors import process_video as _process_video
+from miniature_parakeet.tools.processors import process_audio as _process_audio
+from miniature_parakeet.tools.processors import process_image as _process_image
+from miniature_parakeet.tools.processors import process_video as _process_video
 
 
 class MCPServer:

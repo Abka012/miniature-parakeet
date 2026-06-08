@@ -23,12 +23,12 @@ import zlib
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.agents.audio_agent import AudioAgent
-from app.agents.image_agent import ImageAgent
-from app.agents.video_agent import VideoAgent
-from app.graph.workflow import Workflow
-from app.state.state import AgentState
-from app.tools.mcp_client import mcp_client
+from miniature_parakeet.agents.audio_agent import AudioAgent
+from miniature_parakeet.agents.image_agent import ImageAgent
+from miniature_parakeet.agents.video_agent import VideoAgent
+from miniature_parakeet.graph.workflow import Workflow
+from miniature_parakeet.state.state import AgentState
+from miniature_parakeet.tools.mcp_client import mcp_client
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger(__name__)

@@ -1,6 +1,6 @@
 """Workflow graph package."""
 
-from app.graph.workflow import Workflow
+from miniature_parakeet.graph.workflow import Workflow
 
 __all__ = [
     "Workflow",
