@@ -1,4 +1,4 @@
-# miniature-parakeet
+# async-media-agents
 
 Async Multi-Agent POC using LangGraph + FastMCP + real media processing.
 
@@ -72,7 +72,7 @@ pip install -r requirements.txt
 
 ```
 project/
-├── miniature_parakeet/
+├── async_media_agents/
 │   ├── agents/
 │   │   ├── image_agent.py
 │   │   ├── audio_agent.py
@@ -135,7 +135,7 @@ python scripts/test_workflow.py
 ### Programmatic use
 
 ```python
-from miniature_parakeet.graph.workflow import Workflow
+from async_media_agents.graph.workflow import Workflow
 
 wf = Workflow()
 

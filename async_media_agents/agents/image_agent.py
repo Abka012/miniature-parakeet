@@ -4,7 +4,7 @@ from typing import Any
 
 from langchain_core.prompts import ChatPromptTemplate
 
-from miniature_parakeet.state.state import AgentState
+from async_media_agents.state.state import AgentState
 
 
 class ImageAgent:
@@ -33,7 +33,7 @@ class ImageAgent:
 
     async def process_image(self, image_data: str, format: str = "png") -> str:
         """Process image data and return results."""
-        from miniature_parakeet.tools.mcp_client import mcp_client
+        from async_media_agents.tools.mcp_client import mcp_client
 
         result = await mcp_client.process_image(image_data, format)
         if result.get("status") == "error":
@@ -42,7 +42,7 @@ class ImageAgent:
 
     async def extract_info(self, image_data: str) -> dict:
         """Extract metadata from image."""
-        from miniature_parakeet.tools.mcp_client import mcp_client
+        from async_media_agents.tools.mcp_client import mcp_client
 
         return await mcp_client.process_image(image_data, "png")
 

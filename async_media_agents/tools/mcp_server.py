@@ -1,21 +1,21 @@
 """MCP (Model Context Protocol) server for multi-agent system.
 
-Processing logic lives in ``miniature_parakeet.tools.processors`` and is kept fully
+Processing logic lives in ``async_media_agents.tools.processors`` and is kept fully
 decoupled from the MCP tool registration layer.
 """
 
 from mcp.server import FastMCP
 
-from miniature_parakeet.tools.processors import process_audio as _process_audio
-from miniature_parakeet.tools.processors import process_image as _process_image
-from miniature_parakeet.tools.processors import process_video as _process_video
+from async_media_agents.tools.processors import process_audio as _process_audio
+from async_media_agents.tools.processors import process_image as _process_image
+from async_media_agents.tools.processors import process_video as _process_video
 
 
 class MCPServer:
     """MCP server providing tools for image, audio, and video processing."""
 
     def __init__(self) -> None:
-        self.mcp: FastMCP = FastMCP(name="miniature-parakeet-mcp")
+        self.mcp: FastMCP = FastMCP(name="async-media-agents-mcp")
         self._tools: list[str] = []
         self._register_tools()
 

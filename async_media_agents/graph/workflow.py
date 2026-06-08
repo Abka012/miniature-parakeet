@@ -7,11 +7,11 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, StateGraph
 
-from miniature_parakeet.agents.audio_agent import AudioAgent
-from miniature_parakeet.agents.image_agent import ImageAgent
-from miniature_parakeet.agents.supervisor import SupervisorAgent
-from miniature_parakeet.agents.video_agent import VideoAgent
-from miniature_parakeet.state.state import AgentState
+from async_media_agents.agents.audio_agent import AudioAgent
+from async_media_agents.agents.image_agent import ImageAgent
+from async_media_agents.agents.supervisor import SupervisorAgent
+from async_media_agents.agents.video_agent import VideoAgent
+from async_media_agents.state.state import AgentState
 
 
 class Workflow:
