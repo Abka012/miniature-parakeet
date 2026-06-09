@@ -82,8 +82,13 @@ class Workflow:
         return mapping.get(task_type, task_type)
 
     def _aggregator(self, state: AgentState) -> dict[str, Any]:
-        """Aggregate results from all agents."""
+        """Aggregate results from all agents, ensuring idempotency."""
         existing = state.get("results", {})
+        
+        # Idempotency check: if already completed, do nothing
+        if existing.get("status") == "all_completed":
+            return {}
+
         executed = [k for k in ("image_agent", "audio_agent", "video_agent") if k in existing]
         return {
             "current_agent": "aggregator",
