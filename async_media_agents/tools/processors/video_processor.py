@@ -11,8 +11,8 @@ import cv2
 def process_video(video_data: str, format_hint: str = "mp4") -> dict[str, Any]:
     """Decode base64 video, extract metadata (fps, resolution, duration).
 
-    OpenCV's ``VideoCapture`` requires a filesystem path, so the payload is
-    written to a temporary file that is cleaned up before returning.
+    Uses /dev/shm if available for temporary file storage to improve performance
+    by reducing disk I/O bottlenecks.
     """
     try:
         raw = base64.b64decode(video_data)
@@ -24,9 +24,12 @@ def process_video(video_data: str, format_hint: str = "mp4") -> dict[str, Any]:
             "error": f"Invalid base64 payload: {e}",
         }
 
+    # Use /dev/shm if available for speed
+    temp_dir = "/dev/shm" if os.path.exists("/dev/shm") and os.access("/dev/shm", os.W_OK) else None
+    
     tmp_path = None
     try:
-        with tempfile.NamedTemporaryFile(suffix=f".{format_hint}", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=f".{format_hint}", delete=False, dir=temp_dir) as f:
             f.write(raw)
             tmp_path = f.name
 
